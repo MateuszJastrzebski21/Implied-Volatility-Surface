@@ -211,5 +211,5 @@ else:
 
         st.write("---")
         st.markdown(
-            "Created by Mateusz Jastrzębski  |   [LinkedIn](https://www.linkedin.com/in/mateusz-jastrz%C4%99bski-8a2622264/)"
+            "Created by Mateusz Jastrzębski  |   [LinkedIn](https://www.linkedin.com/in/mateuszjastrzebski21/)"
         )
