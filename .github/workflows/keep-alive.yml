@@ -1,0 +1,46 @@
+name: Keep the Streamlit demo awake
+
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install playwright==1.48.0
+      - run: python -m playwright install --with-deps chromium
+      - name: Open the app and wake it if it is asleep
+        env:
+          APP_URL: https://volatilitysurface.streamlit.app/
+        run: |
+          python - <<'PY'
+          import os
+          import re
+
+          from playwright.sync_api import TimeoutError as PlaywrightTimeout
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              page = browser.new_page()
+              page.goto(os.environ["APP_URL"], wait_until="domcontentloaded", timeout=60_000)
+              try:
+                  button = page.get_by_role("button", name=re.compile("get this app back up", re.I))
+                  button.wait_for(timeout=15_000)
+                  button.click()
+                  print("The app was asleep, clicked the wake-up button.")
+                  page.wait_for_timeout(90_000)
+              except PlaywrightTimeout:
+                  print("The app is awake.")
+                  page.wait_for_timeout(20_000)
+              browser.close()
+          PY
